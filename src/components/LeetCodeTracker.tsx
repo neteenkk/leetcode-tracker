@@ -84,7 +84,11 @@ export default function LeetCodeTracker() {
       if (cache) {
         const parsed = JSON.parse(cache);
 
-        if (parsed.version === DATA_VERSION) {
+        if (
+          parsed?.version === DATA_VERSION &&
+          Array.isArray(parsed.data) &&
+          parsed.data.length > 0
+        ) {
           setAllProblems(parsed.data);
           setLoading(false);
           return;
@@ -133,13 +137,17 @@ export default function LeetCodeTracker() {
   }
 
   function persist(data: Problem[]) {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        version: DATA_VERSION,
-        data,
-      })
-    );
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: DATA_VERSION,
+          data,
+        })
+      );
+    } catch (e) {
+      console.error("Failed to save progress:", e);
+    }
   }
 
   /* ================================
@@ -296,6 +304,9 @@ function Header({ stats }: { stats: { total: number; solved: number; starred: nu
         </span>
         <span>Progress: {stats.percent}%</span>
       </div>
+      <p className="mt-1 text-xs text-gray-500">
+        Progress is saved in this browser (works when deployed on Vercel).
+      </p>
     </div>
   );
 }
